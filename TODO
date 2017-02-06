@@ -1,0 +1,19 @@
+
+
+IMPLEMENT:
+
+    Record emails that got moved
+        email subject, uid, before, after
+
+    Break into sections
+        Main
+
+        Config
+
+        Sorting
+
+        Parser
+
+        Retriever
+
+        Moving & Deleting
