@@ -19,10 +19,8 @@
 
 import email
 
+# Local imports
 from logger import *
-
-
-
 
 
 # ##################################
@@ -71,7 +69,6 @@ def parse_email(raw_email, raw_body):
     else:
         # pp("EMAIL MESSAGE IS MULTIPART: {}".format(emailThing.is_multipart()))
         log(DEBUG, "EMAIL MESSAGE IS MULTIPART: {}".format(emailThing.is_multipart()))
-        message = emailThing.get_payload()
     email_contents["message"] = emailThing.get_payload()
     # pp(email.message_from_string(raw_email).get_payload(decode=True))
     return email_contents

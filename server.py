@@ -20,6 +20,7 @@
 import imaplib
 from datetime import datetime
 
+# Local imports
 from logger import *
 import config
 import parser
@@ -55,8 +56,6 @@ def authenticate():
     global mail
     log(DEBUG, ["Login information: ", config.config['AUTHENTICATION']['user'], config.config['AUTHENTICATION']['pass']])
     mail.login(config.config['AUTHENTICATION']['user'], config.config['AUTHENTICATION']['pass'])
-
-
 
 
 # =================LABELS===================
@@ -137,17 +136,6 @@ def get_mailbox_contents(label):
         log(INFO, "NO MAIL FOR YOU!!!")
         exit(1)
     return data[0].split()
-
-
-# ###################################
-# GET_OLD_UIDS
-#
-# Returns an array of the uid of every message >= 2
-# months old that are in the specified label.
-# ###################################
-def get_old_uids(label):
-    log(INFO, "func --> get_old_uids")
-    log(INFO, "")
 
 
 # ###################################

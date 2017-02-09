@@ -31,10 +31,12 @@ from os.path import isfile
 from datetime import datetime
 from dateutil import tz
 
+# Local imports
 from logger import *
 import server
 import config
 import message
+
 
 def sort(box, email_uid, email_contents, regexes):
     log(INFO, "func --> sort")

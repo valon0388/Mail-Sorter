@@ -17,10 +17,13 @@
 # You should have received a copy of the GNU General Public License
 # along with MailSorter.  If not, see <http://www.gnu.org/licenses/>.
 
+
+# Local imports
 from logger import *
 import server
 
 AUTOMOVE = False
+
 
 class Message:
     to_address = ""
@@ -30,8 +33,7 @@ class Message:
     uid = 00
     labels = [None, None]
 
-
-    def  __init__():
+    def __init__():
         log(DEBUG, "Hello INIT!!")
 
 

@@ -21,10 +21,12 @@ import configparser as cp
 import re
 from os.path import isfile
 
+# Local imports
 from logger import *
 
 config_file = 'sorter.conf'
 config = cp.ConfigParser()
+
 
 # ###################################
 # GET_REGEXES
