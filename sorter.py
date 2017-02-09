@@ -29,7 +29,6 @@ import re
 from email.parser import Parser
 from os.path import isfile
 from datetime import datetime
-from dateutil.parser import parse,tz
 from dateutil import tz
 
 from logger import *

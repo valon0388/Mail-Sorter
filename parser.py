@@ -17,20 +17,7 @@
 # You should have received a copy of the GNU General Public License
 # along with MailSorter.  If not, see <http://www.gnu.org/licenses/>.
 
-import imaplib
-import pprint
 import email
-import time
-import configparser as cp
-import logging
-import subprocess
-import socket
-import re
-from email.parser import Parser
-from os.path import isfile
-from datetime import datetime
-from dateutil.parser import parse,tz
-from dateutil import tz
 
 from logger import *
 
