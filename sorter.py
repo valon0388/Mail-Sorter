@@ -42,9 +42,12 @@ def sort(box, email_uid, email_contents, regexes):
     log(INFO, "func --> sort")
     log(INFO, "The regex for the box {}, is SUBJECT:{} & CONTENT: {}....".format(box, config.config[box]['subject_regex'], config.config[box]['content_regex']))
     log(INFO, "EMAIL -- FROM: {}, SUBJECT: {}".format(email_contents['header']['from'], email_contents['header']['subject']))
-    if sort_sender(box, email_uid, email_contents['header']['from'], regexes[0]) is False:
-        if sort_subject(box, email_uid, email_contents['header']['subject'], regexes[1]) is False:
-            if sort_content(box, email_uid, email_contents['message'], regexes[2]) is False:
+    e_from = email_contents['header']['from'] if 'from' in email_contents['header'] else 'None'
+    e_subject = email_contents['header']['subject'] if 'subject' in email_contents['header'] else 'None'
+    e_message = email_contents['message'] if 'message' in email_contents else 'None'
+    if sort_sender(box, email_uid, e_from, regexes[0]) is False:
+        if sort_subject(box, email_uid, e_subject, regexes[1]) is False:
+            if sort_content(box, email_uid, e_message, regexes[2]) is False and message is not None:
                 log(INFO, "Email Failed to match filter {} for sender, subject, or content...".format(box))
 
 
@@ -69,6 +72,7 @@ def sort_sender(box, email_uid, sender, regex):
     log(INFO, "func --> sort_subject({})".format(regex))
 
     log(INFO, "Email Sender: {}".format(sender))
+    pp("TESTING SENDER INPUT - TypeError: expected string or bytes-like object: {}".format(sender))
     match = regex.search(sender)
     log(INFO, "Match: {}".format(match))
     match = False if match is None else True

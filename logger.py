@@ -23,7 +23,7 @@ from email.parser import Parser
 
 # Log levels: if True, print
 LOGINFO = True
-LOGDEBUG = True
+LOGDEBUG = False
 LOGERROR = True
 
 # Level definitions
@@ -50,4 +50,4 @@ def log(level, logtext):
     if level == MOVE:
         pp("MOVE: {}".format(logtext))
         return
-    pp("OTHER: {}".format(logtext))
+    #pp("OTHER: {}".format(logtext))
