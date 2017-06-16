@@ -18,8 +18,7 @@
 # along with MailSorter.  If not, see <http://www.gnu.org/licenses/>.
 
 import pprint
-from email.parser import Parser
-
+import datetime
 
 # Log levels: if True, print
 LOGINFO = True
@@ -32,22 +31,54 @@ DEBUG = 1
 ERROR = 2
 MOVE = 3
 
-p = pprint.PrettyPrinter(indent=4)
-pp = p.pprint
-parser = Parser()
+class Logger(object):
+    #Singleton implementation
+    __instance = None
 
+    def __init__(self, auto, logfile):
+        self.auto = auto
+        self.logfile = logfile
 
-def log(level, logtext):
-    if LOGINFO and level == INFO:
-        pp("INFO: {}".format(logtext))
-        return
-    if LOGDEBUG and level == DEBUG:
-        pp("DEBUG: {}".format(logtext))
-        return
-    if LOGERROR and level == ERROR:
-        pp("ERROR: {}".format(logtext))
-        return
-    if level == MOVE:
-        pp("MOVE: {}".format(logtext))
-        return
-    #pp("OTHER: {}".format(logtext))
+        if self.auto is True:
+            self.file = open(logfile, 'w')
+
+    def __new__(self, *args, **kwargs):
+        if not isinstance(Logger.__instance, Logger):
+            Logger.__instance = object.__new__(Logger)
+        
+        return Logger.__instance
+
+    p = pprint.PrettyPrinter(indent=4, width=80)
+    pp = p.pprint
+
+    def write_log(self, statement):
+        date = datetime.date.today()
+        if self.auto is True:
+            self.file.write("[{}] {}".format(date, statement))
+        else:
+            self.pp("[{}] {}".format(date, statement))
+
+    def log(self, level, logtext):
+        if LOGINFO and level == INFO:
+            # self.pp("INFO: {}".format(logtext))
+            self.write_log("INFO: {}".format(logtext))
+            return
+        if LOGDEBUG and level == DEBUG:
+            # self.pp("DEBUG: {}".format(logtext))
+            self.write_log("DEBUG: {}".format(logtext))
+            return
+        if LOGERROR and level == ERROR:
+            # self.pp("ERROR: {}".format(logtext))
+            self.write_log("ERROR: {}".format(logtext))
+            return
+        if level == MOVE:
+            # self.pp("MOVE: {}".format(logtext))
+            self.write_log("MOVE: {}".format(logtext))
+            return
+        #self.pp("OTHER: {}".format(logtext))
+        #self.write_log("OTHER: {}".format(logtext))
+    
+    def quit(self):
+        self.write_log("Closing program on user exit")
+        if self.auto is True:
+            file.close()

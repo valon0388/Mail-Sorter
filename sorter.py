@@ -37,65 +37,81 @@ import server
 import config
 import message
 
+logger = Logger(False, False)
 
-def sort(box, email_uid, email_contents, regexes):
-    log(INFO, "func --> sort")
-    log(INFO, "The regex for the box {}, is SUBJECT:{} & CONTENT: {}....".format(box, config.config[box]['subject_regex'], config.config[box]['content_regex']))
-    log(INFO, "EMAIL -- FROM: {}, SUBJECT: {}".format(email_contents['header']['from'], email_contents['header']['subject']))
-    e_from = email_contents['header']['from'] if 'from' in email_contents['header'] else 'None'
-    e_subject = email_contents['header']['subject'] if 'subject' in email_contents['header'] else 'None'
-    e_message = email_contents['message'] if 'message' in email_contents else 'None'
-    if sort_sender(box, email_uid, e_from, regexes[0]) is False:
-        if sort_subject(box, email_uid, e_subject, regexes[1]) is False:
-            if sort_content(box, email_uid, e_message, regexes[2]) is False and message is not None:
+# ###################################
+#  Log
+#
+#  Local log method to specify the 
+#  name of the class/file of the 
+#  caller.
+# ###################################
+def log(level, statement):
+    logger.log(level, "sorter -- {}".format(statement))
+
+
+def sort(box, message, regexes):
+    log(DEBUG, "func --> sort")
+    log(DEBUG, "The regex for the box {}, is SUBJECT:{} & CONTENT: {}....".format(box, config.config[box]['subject_regex'], config.config[box]['content_regex']))
+    log(INFO, "EMAIL -- FROM: {}, SUBJECT: {}".format(message.from_address, message.subject))
+    if sort_sender(box, message, regexes[0]) is False:
+        if sort_subject(box, message, regexes[1]) is False:
+            if sort_content(box, message, regexes[2]) is False and message.body is not None:
                 log(INFO, "Email Failed to match filter {} for sender, subject, or content...".format(box))
 
 
-def sort_subject(box, email_uid, subject, regex):
-    log(INFO, "func --> sort_subject({})".format(regex))
-    # pp("-------Email Contents------")
-    log(INFO, "Email Subject: {}".format(subject))
-    match = regex.search(subject)
-    log(INFO, "Match: {}".format(match))
+def sort_subject(box, message, regex):
+    log(DEBUG, "func --> sort_subject({})".format(regex))
+    log(DEBUG, "Email Subject: {}".format(message.subject))
+    match = None
+    try:
+        match = regex.search(message.subject)
+    except TypeError:
+        log(ERROR, "TypeError: Subject is [{}]".format(message.subject))
+    log(INFO, "Subject Match: {}".format(match))
     match = False if match is None else True
 
     if match:
-        # pp("SUBJECT MATCH FOUND!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
-        message.move_message(email_uid, box)
-        message.remove_label(email_uid, '"inbox"')
-        # quit() ##HERE
+        log(INFO, "SUBJECT MATCH FOUND!!!")
+        message.move_message(box)
+        message.remove_label('"inbox"')
         return True
     return False
 
 
-def sort_sender(box, email_uid, sender, regex):
-    log(INFO, "func --> sort_subject({})".format(regex))
+def sort_sender(box, message, regex):
+    log(DEBUG, "func --> sort_subject({})".format(regex))
 
-    log(INFO, "Email Sender: {}".format(sender))
-    pp("TESTING SENDER INPUT - TypeError: expected string or bytes-like object: {}".format(sender))
-    match = regex.search(sender)
-    log(INFO, "Match: {}".format(match))
+    match = None
+
+    try:
+        log(INFO, "Email Sender: {}".format(message.from_address))
+        log(DEBUG,"TESTING SENDER INPUT - TypeError: expected string or bytes-like object: {}".format(message.from_address))
+        match = regex.search(message.from_address) 
+        log(INFO, "Sender Match: {}".format(match))
+    except TypeError:
+        log(ERROR, "TypeError: sender is [{}]".format(message.from_address))
+
     match = False if match is None else True
 
     if match:
-        # pp("SENDER MATCH FOUND!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
-        message.move_message(email_uid, box)
-        message.remove_label(email_uid, '"inbox"')
-        # quit() ##HERE
+        log(DEBUG, "SENDER MATCH FOUND!!!")
+        message.move_message(box)
+        message.remove_label('"inbox"')
         return True
     return False
 
 
-def sort_content(box, email_uid, email, regex):
-    log(INFO, "func --> sort_content({})".format(regex))
+def sort_content(box, message, regex):
+    log(DEBUG, "func --> sort_content({})".format(regex))
 
-    match = regex.search(email)
-    log(INFO, "Match: {}".format(match))
+    match = regex.search(message.body)
+    log(INFO, "Content Match: {}".format(match))
     match = False if match is None else True
 
     if match:
-        message.move_message(email_uid, box)
-        message.remove_label(email_uid, "inbox")
+        message.move_message(box)
+        message.remove_label("inbox")
         return True
     return False
 
@@ -113,17 +129,15 @@ def sort_content(box, email_uid, email, regex):
 # sorted based on age. Anything >2 months and not
 # starred will be archived.
 # ################################### Note: Separate the logic of getting the mail and sorting the mail here
-def sort_mail():
-    log(INFO, "func --> sort_mail")
-#   global mail
+def sort_mail(server):
+    log(DEBUG, "func --> sort_mail")
     inbox = '"inbox"'
-    server.mail.select(inbox)
+    server.select_box(inbox)
     message_uids = server.get_mailbox_contents(inbox)
     sections = config.get_sections()
-    pp("Would you like to sort  for all labels or just one? ")
     choice = input("Options: all or one of the following [{}]? ".format(sections))
-    pp(choice)
-    pp(sections)
+    log(DEBUG, choice)
+    log(DEBUG, sections)
 
     if "\"{}\"".format(choice) in sections:
             choice = "\"{}\"".format(choice)
@@ -132,9 +146,9 @@ def sort_mail():
                 print('.', end="")
                 time.sleep(1)
             print('')
-            regexes = get_regexes(choice)
+            regexes = config.get_regexes(choice)
             for email_uid in message_uids:
-                email_contents = retrieve_message(email_uid)
+                email_contents = server.retrieve_message(email_uid)
                 sort(choice, email_uid, email_contents, regexes)
     elif choice == "all":
         log(INFO, "SORTING MAIL FOR ALL FILTERS!!!")
@@ -146,12 +160,12 @@ def sort_mail():
             print('')
             regexes = config.get_regexes(label)
             for email_uid in message_uids:
-                email_contents = server.retrieve_message(email_uid)
-                sort(label, email_uid, email_contents, regexes)  # HERE -- need to search through labels in config
+                log(INFO, "========================================")
+                message = server.retrieve_message(email_uid)
+                sort(label, message, regexes)
                 # #pp(email_contents)
-                # #pp("========================================")
             # email_contents = retrieve_message(message_uids[-1])
             # #pp(email_contents)
             # #pp("========================================")
     else:
-        pp("ERROR: selection {} is not one of the provided options!!!".format(choice))
+        log(ERROR, "selection {} is not one of the provided options!!!".format(choice))

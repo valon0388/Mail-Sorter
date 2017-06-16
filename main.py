@@ -18,13 +18,36 @@
 # along with MailSorter.  If not, see <http://www.gnu.org/licenses/>.
 
 import socket
+import argparse
+import signal
+import sys
+import datetime
 
 # Local imports
 from logger import *
 import config
-import server
+from server import Server
 import sorter
 
+
+parser = argparse.ArgumentParser(description='Parse flags such as -a --auto for autosort, -v --verbose for verbose logging, -s --sort for specific folder sort, -l --log to specify a log file')
+parser.add_argument('-a', '--auto',       type=bool,    default=False,                                  help='True|False Automatically sort all emails without human intervention?')
+parser.add_argument('-v', '--verbose',    type=bool,    default=False,                                  help='True|False Automatically sort all emails without human intervention?')
+parser.add_argument('-s', '--sort',       type=str,     default="all",                                  help='True|False Automatically sort all emails without human intervention?')
+parser.add_argument('-l', '--log',        type=str,     default="~/.config/MailSorter/MailSorter.log",  help='True|False Automatically sort all emails without human intervention?')
+args = parser.parse_args()
+
+logger = Logger(args.auto, args.log)
+
+# ###################################
+#  Log
+#
+#  Local log method to specify the 
+#  name of the class/file of the 
+#  caller.
+# ###################################
+def log(level, statement):
+    logger.log(level, "main -- {}".format(statement))
 
 # ###################################
 #  MAIN
@@ -37,14 +60,13 @@ def main():
     is_connected()
     config.get_config()
     # --------------Connect and Authentication-----------------------
-    server.connect()
-    server.authenticate()
+    server = Server(config.config['AUTHENTICATION']['server'], config.config['AUTHENTICATION']['user'], config.config['AUTHENTICATION']['pass'])
     # --------------Perform Mail Operations------------------------------
     labels = server.get_all_labels()
-    sorter.sort_mail()  # '"Social"'
+    sorter.sort_mail(server)  # '"Social"'
     # --------------Close Connection----------------------------------------
-    server.mail.close()
-    server.mail.logout()
+    server.close()
+    server.logout()
 
 
 def is_connected():
@@ -66,6 +88,12 @@ def is_connected():
     # pp("INTERNET CONNECTION NOT DETECTED")
     exit(1)
     return False
+
+def quit(posOne, posTwo):
+    logger.quit()
+    sys.exit(0)
+
+signal.signal(signal.SIGINT, quit)
 
 
 if __name__ == "__main__":

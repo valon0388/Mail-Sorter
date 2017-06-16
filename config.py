@@ -27,6 +27,17 @@ from logger import *
 config_file = 'sorter.conf'
 config = cp.ConfigParser()
 
+logger = Logger(False, False)
+
+# ###################################
+#  Log
+#
+#  Local log method to specify the 
+#  name of the class/file of the 
+#  caller.
+# ###################################
+def log(level, statement):
+    logger.log(level, "config -- {}".format(statement))
 
 # ###################################
 # GET_REGEXES

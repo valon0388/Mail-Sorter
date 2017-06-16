@@ -18,9 +18,22 @@
 # along with MailSorter.  If not, see <http://www.gnu.org/licenses/>.
 
 import email
+from email.parser import Parser
 
 # Local imports
 from logger import *
+
+logger = Logger(False, False)
+
+# ###################################
+#  Log
+#
+#  Local log method to specify the 
+#  name of the class/file of the 
+#  caller.
+# ###################################
+def log(level, statement):
+    logger.log(level, "parser -- {}".format(statement))
 
 
 # ##################################
@@ -59,6 +72,7 @@ def parse_email(raw_email, raw_body):
     log(INFO, "=======================================")
 
     emailText = raw_body
+    parser = Parser()
     emailThing = parser.parsestr(emailText)
 
     if emailThing.is_multipart():
