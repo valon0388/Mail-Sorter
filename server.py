@@ -22,7 +22,7 @@ import datetime
 
 # Local imports
 from logger import *
-import parser
+from parser import Parser
 from message import Message
 
 class Server():
@@ -33,8 +33,6 @@ class Server():
 
     mail = ''
 
-    logger = Logger(False, False)
-
     # ###################################
     #  init
     #
@@ -43,9 +41,10 @@ class Server():
     #
     # ###################################
     def __init__(self, server, user, password):
-         self.log(DEBUG, "Server Init!!")
-         self.connect(server)
-         self.authenticate(user, password)
+        self.logger = Logger(False, False)
+        self.log(DEBUG, "Server Init!!")
+        self.connect(server)
+        self.authenticate(user, password)
 
     # ###################################
     #  Log
@@ -139,6 +138,7 @@ class Server():
         else:
             raw_body = "None"
         
+        parser = Parser()
         parsed_message = parser.parse_email(raw_email, raw_body)
 
         return Message(parsed_message, email_uid, self)

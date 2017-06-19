@@ -19,6 +19,7 @@
 
 import pprint
 import datetime
+import os
 
 # Log levels: if True, print
 LOGINFO = True
@@ -31,32 +32,43 @@ DEBUG = 1
 ERROR = 2
 MOVE = 3
 
-class Logger(object):
-    #Singleton implementation
-    __instance = None
+def singleton(cls):
+    instances = {}
 
-    def __init__(self, auto, logfile):
-        self.auto = auto
-        self.logfile = logfile
+    def __init__(auto, logfile):
+        return
 
-        if self.auto is True:
-            self.file = open(logfile, 'w')
+    def getinstance(auto, logfile):
+        if cls not in instances:
+            instances[cls] = cls(auto, logfile)
+        return instances[cls]
+    return getinstance
 
-    def __new__(self, *args, **kwargs):
-        if not isinstance(Logger.__instance, Logger):
-            Logger.__instance = object.__new__(Logger)
-        
-        return Logger.__instance
-
+@singleton
+class Logger:
     p = pprint.PrettyPrinter(indent=4, width=80)
     pp = p.pprint
 
+    def __init__(self, auto, logfile):
+        self.auto = auto
+        self.logfile = os.path.expanduser(logfile)
+
+        try:
+            self.file = open(logfile, 'a+')
+        except FileNotFoundError:
+            directory = os.path.split(logfile)[0]
+            if not os.path.exists(directory):
+                os.makedirs(directory)
+            self.file = open(logfile, 'a+')
+
+        self.log(DEBUG, "Initialized Logger")
+
     def write_log(self, statement):
-        date = datetime.date.today()
+        dt = datetime.datetime.today()
         if self.auto is True:
-            self.file.write("[{}] {}".format(date, statement))
+            self.file.write("[{}] {}\n".format(dt, statement))
         else:
-            self.pp("[{}] {}".format(date, statement))
+            self.pp("[{}] {}".format(dt, statement))
 
     def log(self, level, logtext):
         if LOGINFO and level == INFO:
@@ -81,4 +93,4 @@ class Logger(object):
     def quit(self):
         self.write_log("Closing program on user exit")
         if self.auto is True:
-            file.close()
+            self.file.close()

@@ -20,9 +20,6 @@
 
 # Local imports
 from logger import *
-import server
-
-AUTOMOVE = True
 
 
 class Message:
@@ -33,9 +30,8 @@ class Message:
     uid = 00
     labels = [None, None]
 
-    logger = Logger(False, False)
-
     def __init__(self, parsed_message, uid, server):
+        self.logger = Logger(False, False)
         self.log(DEBUG, "Message Init")
         self.to_address = parsed_message['header']['to'] if 'to' in parsed_message['header'] else 'None'
         self.from_address = parsed_message['header']['from'] if 'from' in parsed_message['header'] else 'None'
@@ -137,37 +133,28 @@ class Message:
 
     # ================MESSAGES==================
     # ###################################
-    # MOVE_MESSAGE
+    # COPY_MESSAGE
     #
     # Moves a message from one label to another by removing
     # the source label and adding the destination label.
     # ###################################
-    def move_message(self, destination):
+    def copy_message(self, destination):   ############################################# Move the automove to sorter side. 
         self.log(INFO, "func --> move_message")
-        options = {'Y': True, 'N': False, 'n': False}
-        if AUTOMOVE is False:
-            choice = input("Would you like to move this email [UID[{}] to {}? ".format(self.uid, destination))
-        else:
-            choice = 'Y'
 
-        try:
-            self.log(INFO, options[choice])
-            if options[choice]:
-                self.log(INFO, 'MOVE')
-                self.log(INFO, "MOVING  MESSAGE UID[{}]".format(self.uid))
-                response = self.server.mail.uid('COPY', self.uid, destination)
-                self.log(INFO, response)
-                if response[0] == 'OK':
-                    self.log(INFO, self.server.mail.uid('STORE', self.uid, '+FLAGS', '(\\Deleted)'))
-                    self.log(INFO, 'ORIGINAL DELETED')
-                    self.log(INFO, self.server.mail.expunge())
-                    self.log(INFO, "MAIL MOVED")
-                else:
-                    self.log(INFO, 'ERROR: FAILED TO MOVE MAIL')
-            else:
-                self.log(INFO, 'LEAVE')
-        except KeyError:
-            self.log(INFO, 'Item %s not found' % choice)
+        response = self.server.mail.uid('COPY', self.uid, destination)
+        self.log(INFO, response)
+        if response[0] == 'OK':
+            self.log(INFO, self.server.mail.uid('STORE', self.uid, '+FLAGS', '(\\Deleted)'))
+            self.log(INFO, 'ORIGINAL DELETED')
+            self.log(INFO, self.server.mail.expunge())
+            self.log(INFO, "MAIL MOVED")
+        else:
+            self.log(INFO, 'ERROR: FAILED TO MOVE MAIL')
+
+
+    def move_message(self, destination):
+        self.copy_message(destination)
+        self.remove_label('"inbox"')
 
 
     # ###################################
